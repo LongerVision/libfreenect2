@@ -336,7 +336,7 @@ int main(int argc, char *argv[])
   else
   {
     DIR *d;
-    struct dirent *dir;
+    struct dirent *dir = nullptr;
 
     std::vector<std::string> frame_filenames;
 
