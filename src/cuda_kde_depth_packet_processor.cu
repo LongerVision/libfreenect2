@@ -36,8 +36,9 @@
 #include <libfreenect2/protocol/response.h>
 #include "libfreenect2/logging.h"
 
-//#include <helper_math.h>
+#include <helper_math.h>
 #include <math_constants.h>
+#include <cstring>
 
 __constant__ static unsigned int BFI_BITMASK;
 __constant__ static float AB_MULTIPLIER;
@@ -1314,17 +1315,45 @@ public:
     depth_frame->format = Frame::Float;
   }
 
+  // void fill_trig_table(const protocol::P0TablesResponse *p0table)
+  // {
+  //   for (int r = 0; r < 424; ++r) {
+  //     float4 *it = &h_p0table[r * 512];
+  //     const uint16_t *it0 = &p0table->p0table0[r * 512];
+  //     const uint16_t *it1 = &p0table->p0table1[r * 512];
+  //     const uint16_t *it2 = &p0table->p0table2[r * 512];
+  //     for (int c = 0; c < 512; ++c, ++it, ++it0, ++it1, ++it2) {
+  //       it->x = -((float) * it0) * 0.000031 * M_PI;
+  //       it->y = -((float) * it1) * 0.000031 * M_PI;
+  //       it->z = -((float) * it2) * 0.000031 * M_PI;
+  //       it->w = 0.0f;
+  //     }
+  //   }
+  // }
   void fill_trig_table(const protocol::P0TablesResponse *p0table)
   {
+    // Temporary arrays to store aligned data
+    uint16_t aligned_p0table0[512];
+    uint16_t aligned_p0table1[512];
+    uint16_t aligned_p0table2[512];
+
     for (int r = 0; r < 424; ++r) {
       float4 *it = &h_p0table[r * 512];
-      const uint16_t *it0 = &p0table->p0table0[r * 512];
-      const uint16_t *it1 = &p0table->p0table1[r * 512];
-      const uint16_t *it2 = &p0table->p0table2[r * 512];
+
+      // Copy data from the packed structure to aligned temporary arrays
+      std::memcpy(aligned_p0table0, &p0table->p0table0[r * 512], sizeof(uint16_t) * 512);
+      std::memcpy(aligned_p0table1, &p0table->p0table1[r * 512], sizeof(uint16_t) * 512);
+      std::memcpy(aligned_p0table2, &p0table->p0table2[r * 512], sizeof(uint16_t) * 512);
+
+      // Use pointers to the aligned arrays
+      const uint16_t *it0 = aligned_p0table0;
+      const uint16_t *it1 = aligned_p0table1;
+      const uint16_t *it2 = aligned_p0table2;
+
       for (int c = 0; c < 512; ++c, ++it, ++it0, ++it1, ++it2) {
-        it->x = -((float) * it0) * 0.000031 * M_PI;
-        it->y = -((float) * it1) * 0.000031 * M_PI;
-        it->z = -((float) * it2) * 0.000031 * M_PI;
+        it->x = -((float) *it0) * 0.000031 * M_PI;
+        it->y = -((float) *it1) * 0.000031 * M_PI;
+        it->z = -((float) *it2) * 0.000031 * M_PI;
         it->w = 0.0f;
       }
     }

@@ -40,6 +40,7 @@
 
 #include <cmath>
 #include <limits>
+#include <cstring>
 
 /**
  * Vector class.
@@ -828,31 +829,73 @@ void CpuDepthPacketProcessor::setConfiguration(const libfreenect2::DepthPacketPr
  * @param buffer Buffer containing the response.
  * @param buffer_length Length of the response data.
  */
+// void CpuDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length)
+// {
+//   // TODO: check known header fields (headersize, tablesize)
+//   libfreenect2::protocol::P0TablesResponse* p0table = (libfreenect2::protocol::P0TablesResponse*)buffer;
+
+//   if(buffer_length < sizeof(libfreenect2::protocol::P0TablesResponse))
+//   {
+//     LOG_ERROR << "P0Table response too short!";
+//     return;
+//   }
+
+//   if(impl_->flip_ptables)
+//   {
+//     flipHorizontal(Mat<uint16_t>(424, 512, p0table->p0table0), impl_->p0_table0);
+//     flipHorizontal(Mat<uint16_t>(424, 512, p0table->p0table1), impl_->p0_table1);
+//     flipHorizontal(Mat<uint16_t>(424, 512, p0table->p0table2), impl_->p0_table2);
+//   }
+//   else
+//   {
+//     Mat<uint16_t> p00(424, 512, p0table->p0table0);
+//     p00.copyTo(impl_->p0_table0);
+//     Mat<uint16_t>(424, 512, p0table->p0table1).copyTo(impl_->p0_table1);
+//     Mat<uint16_t>(424, 512, p0table->p0table2).copyTo(impl_->p0_table2);
+//   }
+
+//   impl_->fillTrigTable(impl_->p0_table0, impl_->trig_table0);
+//   impl_->fillTrigTable(impl_->p0_table1, impl_->trig_table1);
+//   impl_->fillTrigTable(impl_->p0_table2, impl_->trig_table2);
+// }
+
 void CpuDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length)
 {
-  // TODO: check known header fields (headersize, tablesize)
-  libfreenect2::protocol::P0TablesResponse* p0table = (libfreenect2::protocol::P0TablesResponse*)buffer;
-
+  // Check for minimum buffer length to ensure it's safe to cast the buffer to P0TablesResponse
   if(buffer_length < sizeof(libfreenect2::protocol::P0TablesResponse))
   {
     LOG_ERROR << "P0Table response too short!";
     return;
   }
 
+  libfreenect2::protocol::P0TablesResponse* p0table = reinterpret_cast<libfreenect2::protocol::P0TablesResponse*>(buffer);
+
+  // Temporary buffers for alignment
+  uint16_t aligned_p0table0[424 * 512]; // Ensure these dimensions are correct for your use case
+  uint16_t aligned_p0table1[424 * 512];
+  uint16_t aligned_p0table2[424 * 512];
+
+  // Copy data to aligned buffers
+  std::memcpy(aligned_p0table0, p0table->p0table0, sizeof(aligned_p0table0));
+  std::memcpy(aligned_p0table1, p0table->p0table1, sizeof(aligned_p0table1));
+  std::memcpy(aligned_p0table2, p0table->p0table2, sizeof(aligned_p0table2));
+
+  // Use the aligned buffers
   if(impl_->flip_ptables)
   {
-    flipHorizontal(Mat<uint16_t>(424, 512, p0table->p0table0), impl_->p0_table0);
-    flipHorizontal(Mat<uint16_t>(424, 512, p0table->p0table1), impl_->p0_table1);
-    flipHorizontal(Mat<uint16_t>(424, 512, p0table->p0table2), impl_->p0_table2);
+    flipHorizontal(Mat<uint16_t>(424, 512, aligned_p0table0), impl_->p0_table0);
+    flipHorizontal(Mat<uint16_t>(424, 512, aligned_p0table1), impl_->p0_table1);
+    flipHorizontal(Mat<uint16_t>(424, 512, aligned_p0table2), impl_->p0_table2);
   }
   else
   {
-    Mat<uint16_t> p00(424, 512, p0table->p0table0);
+    Mat<uint16_t> p00(424, 512, aligned_p0table0);
     p00.copyTo(impl_->p0_table0);
-    Mat<uint16_t>(424, 512, p0table->p0table1).copyTo(impl_->p0_table1);
-    Mat<uint16_t>(424, 512, p0table->p0table2).copyTo(impl_->p0_table2);
+    Mat<uint16_t>(424, 512, aligned_p0table1).copyTo(impl_->p0_table1);
+    Mat<uint16_t>(424, 512, aligned_p0table2).copyTo(impl_->p0_table2);
   }
 
+  // Use the aligned data for trig table filling
   impl_->fillTrigTable(impl_->p0_table0, impl_->trig_table0);
   impl_->fillTrigTable(impl_->p0_table1, impl_->trig_table1);
   impl_->fillTrigTable(impl_->p0_table2, impl_->trig_table2);
