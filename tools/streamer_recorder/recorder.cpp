@@ -32,18 +32,19 @@ Recorder::Recorder() : timeStamps(MAX_FRAME_ID)
 {
 }
 
-// get initial time in ms
+// get initial time in ms using gettimeofday
 int Recorder::getMilliCount()
 {
-  ftime(&tb);
-  int nCount = tb.millitm + (tb.time & 0xfffff) * 1000;
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    int nCount = tv.tv_usec / 1000 + tv.tv_sec * 1000;
   return nCount;
 }
 
 // get time diff from nTimeStart to now
 int Recorder::getMilliSpan(int nTimeStart)
 {
-  nSpan = Recorder::getMilliCount() - nTimeStart;
+    int nSpan = Recorder::getMilliCount() - nTimeStart;
   if(nSpan < 0)
     nSpan += 0x100000 * 1000;
   return nSpan;
@@ -177,14 +178,12 @@ void Recorder::saveTimeStamp()
   {
       std::cout << "recording lasted " << ((timeStamps[frameID-1]-timeStamps[0])/1000.0) << " sec(s), writing timeStamp data..." << std::endl;
       fout << "# Elapsed time in ms # \n";
-      for(int i = 0; i<frameID; i++)
-      {
-        fout << (float)timeStamps[i];
-        fout << '\n';
+        for (int i = 0; i < frameID; i++) {
+            fout << timeStamps[i] << '\n';
       }
+      fout.close();
   }
-  else
-  {
+    else {
     std::cout << "File could not be opened." << std::endl;
   }
 }

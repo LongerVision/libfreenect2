@@ -37,7 +37,7 @@
 #include <vector>
 #include <fstream>      // file input/output functions
 #include <cstdlib>      // time stamp
-#include <sys/timeb.h>  // time stamp
+#include <sys/time.h>   // time stamp
 
 class Recorder
 {
@@ -47,7 +47,7 @@ public:
   void initialize();
   void record(libfreenect2::Frame* frame, const std::string& frame_type);
 
-  void stream(libfreenect2::Frame* frame);
+  // void stream(libfreenect2::Frame* frame);
 
   void saveTimeStamp();
   void registTimeStamp();
@@ -60,7 +60,6 @@ private:
   cv::Mat cvMat_frame;
 
   // SAVE IMAGE
-  //cv::vector<int> img_comp_param; //vector that stores the compression parameters of the image
   std::vector<int> img_comp_param; //vector that stores the compression parameters of the image
   int frameID;
   // int maxFrameID; //  16.6min max at 30 FPS (max frame ID sort of hardcoded in image naming too, see below)
@@ -75,9 +74,7 @@ private:
   std::string recordPath;
   // -----------------
 
-  // Timer
-  timeb tb;
-  int nSpan;
+  // Time handling methods
   int getMilliSpan(int nTimeStart);
   int getMilliCount();
 };
