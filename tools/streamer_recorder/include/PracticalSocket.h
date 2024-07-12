@@ -39,18 +39,18 @@ public:
    *   @param incSysMsg true if system message (from strerror(errno))
    *   should be postfixed to the user provided message
    */
-  SocketException(const string &message, bool inclSysMsg = false) throw();
+  SocketException(const string &message, bool inclSysMsg = false) noexcept;
 
   /**
    *   Provided just to guarantee that no exceptions are thrown.
    */
-  ~SocketException() throw();
+  ~SocketException() noexcept;
 
   /**
    *   Get the exception message
    *   @return exception message
    */
-  const char *what() const throw();
+  const char *what() const noexcept override;
 
 private:
   string userMessage;  // Exception message
@@ -71,14 +71,14 @@ public:
    *   @return local address of socket
    *   @exception SocketException thrown if fetch fails
    */
-  string getLocalAddress() throw(SocketException);
+  string getLocalAddress() noexcept(false);
 
   /**
    *   Get the local port
    *   @return local port of socket
    *   @exception SocketException thrown if fetch fails
    */
-  unsigned short getLocalPort() throw(SocketException);
+  unsigned short getLocalPort() noexcept(false);
 
   /**
    *   Set the local port to the specified port and the local address
@@ -86,7 +86,7 @@ public:
    *   @param localPort local port
    *   @exception SocketException thrown if setting local port fails
    */
-  void setLocalPort(unsigned short localPort) throw(SocketException);
+  void setLocalPort(unsigned short localPort) noexcept(false);
 
   /**
    *   Set the local port to the specified port and the local address
@@ -97,7 +97,7 @@ public:
    *   @exception SocketException thrown if setting local port or address fails
    */
   void setLocalAddressAndPort(const string &localAddress,
-    unsigned short localPort = 0) throw(SocketException);
+    unsigned short localPort = 0) noexcept(false);
 
   /**
    *   If WinSock, unload the WinSock DLLs; otherwise do nothing.  We ignore
@@ -112,7 +112,7 @@ public:
    *   @return number of bytes read, 0 for EOF, and -1 for error
    *   @exception SocketException thrown WinSock clean up fails
    */
-  static void cleanUp() throw(SocketException);
+  static void cleanUp() noexcept(false);
 
   /**
    *   Resolve the specified service for the specified protocol to the
@@ -130,7 +130,7 @@ private:
 
 protected:
   int sockDesc;              // Socket descriptor
-  Socket(int type, int protocol) throw(SocketException);
+  Socket(int type, int protocol) noexcept(false);
   Socket(int sockDesc);
 };
 
@@ -147,7 +147,7 @@ public:
    *   @exception SocketException thrown if unable to establish connection
    */
   void connect(const string &foreignAddress, unsigned short foreignPort)
-    throw(SocketException);
+    noexcept(false);
 
   /**
    *   Write the given buffer to this socket.  Call connect() before
@@ -156,7 +156,7 @@ public:
    *   @param bufferLen number of bytes from buffer to be written
    *   @exception SocketException thrown if unable to send data
    */
-  void send(const void *buffer, int bufferLen) throw(SocketException);
+  void send(const void *buffer, int bufferLen) noexcept(false);
 
   /**
    *   Read into the given buffer up to bufferLen bytes data from this
@@ -166,24 +166,24 @@ public:
    *   @return number of bytes read, 0 for EOF, and -1 for error
    *   @exception SocketException thrown if unable to receive data
    */
-  int recv(void *buffer, int bufferLen) throw(SocketException);
+  int recv(void *buffer, int bufferLen) noexcept(false);
 
   /**
    *   Get the foreign address.  Call connect() before calling recv()
    *   @return foreign address
    *   @exception SocketException thrown if unable to fetch foreign address
    */
-  string getForeignAddress() throw(SocketException);
+  string getForeignAddress() noexcept(false);
 
   /**
    *   Get the foreign port.  Call connect() before calling recv()
    *   @return foreign port
    *   @exception SocketException thrown if unable to fetch foreign port
    */
-  unsigned short getForeignPort() throw(SocketException);
+  unsigned short getForeignPort() noexcept(false);
 
 protected:
-  CommunicatingSocket(int type, int protocol) throw(SocketException);
+  CommunicatingSocket(int type, int protocol) noexcept(false);
   CommunicatingSocket(int newConnSD);
 };
 
@@ -196,7 +196,7 @@ public:
    *   Construct a TCP socket with no connection
    *   @exception SocketException thrown if unable to create TCP socket
    */
-  TCPSocket() throw(SocketException);
+  TCPSocket() noexcept(false);
 
   /**
    *   Construct a TCP socket with a connection to the given foreign address
@@ -206,7 +206,7 @@ public:
    *   @exception SocketException thrown if unable to create TCP socket
    */
   TCPSocket(const string &foreignAddress, unsigned short foreignPort)
-      throw(SocketException);
+      noexcept(false);
 
 private:
   // Access for TCPServerSocket::accept() connection creation
@@ -229,7 +229,7 @@ public:
    *   @exception SocketException thrown if unable to create TCP server socket
    */
   TCPServerSocket(unsigned short localPort, int queueLen = 5)
-      throw(SocketException);
+      noexcept(false);
 
   /**
    *   Construct a TCP socket for use with a server, accepting connections
@@ -241,17 +241,17 @@ public:
    *   @exception SocketException thrown if unable to create TCP server socket
    */
   TCPServerSocket(const string &localAddress, unsigned short localPort,
-      int queueLen = 5) throw(SocketException);
+      int queueLen = 5) noexcept(false);
 
   /**
    *   Blocks until a new connection is established on this socket or error
    *   @return new connection socket
    *   @exception SocketException thrown if attempt to accept a new connection fails
    */
-  TCPSocket *accept() throw(SocketException);
+  TCPSocket *accept() noexcept(false);
 
 private:
-  void setListen(int queueLen) throw(SocketException);
+  void setListen(int queueLen) noexcept(false);
 };
 
 /**
@@ -263,14 +263,14 @@ public:
    *   Construct a UDP socket
    *   @exception SocketException thrown if unable to create UDP socket
    */
-  UDPSocket() throw(SocketException);
+  UDPSocket() noexcept(false);
 
   /**
    *   Construct a UDP socket with the given local port
    *   @param localPort local port
    *   @exception SocketException thrown if unable to create UDP socket
    */
-  UDPSocket(unsigned short localPort) throw(SocketException);
+  UDPSocket(unsigned short localPort) noexcept(false);
 
   /**
    *   Construct a UDP socket with the given local port and address
@@ -279,14 +279,14 @@ public:
    *   @exception SocketException thrown if unable to create UDP socket
    */
   UDPSocket(const string &localAddress, unsigned short localPort)
-      throw(SocketException);
+      noexcept(false);
 
   /**
    *   Unset foreign address and port
    *   @return true if disassociation is successful
    *   @exception SocketException thrown if unable to disconnect UDP socket
    */
-  void disconnect() throw(SocketException);
+  void disconnect() noexcept(false);
 
   /**
    *   Send the given buffer as a UDP datagram to the
@@ -299,7 +299,7 @@ public:
    *   @exception SocketException thrown if unable to send datagram
    */
   void sendTo(const void *buffer, int bufferLen, const string &foreignAddress,
-            unsigned short foreignPort) throw(SocketException);
+            unsigned short foreignPort) noexcept(false);
 
   /**
    *   Read read up to bufferLen bytes data from this socket.  The given buffer
@@ -312,28 +312,28 @@ public:
    *   @exception SocketException thrown if unable to receive datagram
    */
   int recvFrom(void *buffer, int bufferLen, string &sourceAddress,
-               unsigned short &sourcePort) throw(SocketException);
+               unsigned short &sourcePort) noexcept(false);
 
   /**
    *   Set the multicast TTL
    *   @param multicastTTL multicast TTL
    *   @exception SocketException thrown if unable to set TTL
    */
-  void setMulticastTTL(unsigned char multicastTTL) throw(SocketException);
+  void setMulticastTTL(unsigned char multicastTTL) noexcept(false);
 
   /**
    *   Join the specified multicast group
    *   @param multicastGroup multicast group address to join
    *   @exception SocketException thrown if unable to join group
    */
-  void joinGroup(const string &multicastGroup) throw(SocketException);
+  void joinGroup(const string &multicastGroup) noexcept(false);
 
   /**
    *   Leave the specified multicast group
    *   @param multicastGroup multicast group address to leave
    *   @exception SocketException thrown if unable to leave group
    */
-  void leaveGroup(const string &multicastGroup) throw(SocketException);
+  void leaveGroup(const string &multicastGroup) noexcept(false);
 
 private:
   void setBroadcast();
